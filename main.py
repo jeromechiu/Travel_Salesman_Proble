@@ -6,7 +6,7 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
 
-gmaps = googlemaps.Client(key='AIzaSyChK3j3VtgLFgFDuep6dNU_NzXqztGpqxk')
+gmaps = googlemaps.Client(key='google_map_key')
 
 
 destinations = [[0, '新北市中和區中正路209號'],
