@@ -1,7 +1,8 @@
 import travel_point_grouping
-import routing
+# import routing
 from address_to_wgs84 import transfer_address_geocord
 from routing import calculate_tsp
+from travel_point_grouping import wgs84_to_cartesian, grouping, wgs84_to_cartesian
 
 
 
@@ -33,15 +34,15 @@ dest_coord = [[0, (24.993484, 121.497134)],
 
 
 def main():
-    """Call tranfer_address_gepcord if you wanna get gps position when having real address"""
-    wgs84_map = transfer_address_geocord(destinations)
+
+    # dest_coord = transfer_address_geocord(destinations)
+    groupped = grouping(wgs84_to_cartesian(dest_coord), dest_coord)
+    print(groupped)
     
-    
-    calculate_tsp(wgs84_map)
-    
-    # groupped = travel_point_grouping.grouping(travel_point_grouping.wgs84_to_cartesian(travel_point_grouping.dest_coord))
-    # print(groupped)
-    
+
+
+    delivery_plan = calculate_tsp(groupped)
+    print(delivery_plan)
 if __name__ == '__main__':
     main()  
  

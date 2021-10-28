@@ -10,16 +10,6 @@ from address_to_wgs84 import transfer_address_geocord
 gmaps = googlemaps.Client(key='AIzaSyChK3j3VtgLFgFDuep6dNU_NzXqztGpqxk')
 
 
-# destinations = [[0, '新北市中和區中正路209號'],
-#                 [1, '新北市中和區建一路92號'],
-#                 [3, '新北市中和區景平路634-2號B1'],
-#                 [2, '新北市中和區連城路258號18樓']
-#                 ]
-
-
-
-
-
 def gen_square_form(locations):
     square_matrix = list()
 
@@ -39,7 +29,7 @@ def gen_square_form(locations):
             elif j < i:
                 #Already done
                 pass            
-    print(square_matrix)
+    # print(square_matrix)
     return square_matrix
 
 def create_data_model(destinations):
@@ -66,21 +56,52 @@ def print_solution(manager, routing, solution):
     plan_output += 'Objective: {}m\n'.format(route_distance)
 
 
-def calculate_tsp(destinations):
-    data = create_data_model(destinations)
-    manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
-                                       data['num_vehicles'], data['depot'])
-    routing = pywrapcp.RoutingModel(manager)
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-    # Solve the problem.
-    solution = routing.SolveWithParameters(search_parameters)
+def get_routes(solution, routing, manager):
+  """Get vehicle routes from a solution and store them in an array."""
+  # Get vehicle routes and store them in a two dimensional array whose
+  # i,j entry is the jth location visited by vehicle i along its route.
+  routes = []
+  for route_nbr in range(routing.vehicles()):
+    index = routing.Start(route_nbr)
+    route = [manager.IndexToNode(index)]
+    while not routing.IsEnd(index):
+      index = solution.Value(routing.NextVar(index))
+      route.append(manager.IndexToNode(index))
+    routes.append(route)
+  return routes
 
-    # Print solution on console.
-    if solution:
-        print_solution(manager, routing, solution)
+def calculate_tsp(destinations):    
+    group_id = destinations.groupby(['group'],as_index=True)
+    
+    for i in group_id:
+        id = i[1].index.values
+        group_dest = pd.DataFrame(columns=['coord'], index=id)
+        for j in id:
+            data = (i[1].loc[j,'lat'], i[1].loc[j,'long'])
+            group_dest.loc[j,'coord'] = data
+        group_dest.reset_index(inplace=True)
 
+        group_dest.rename(columns={"index":"id"},inplace=True)    
+        data = create_data_model(group_dest)
+        manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
+                                           data['num_vehicles'], data['depot'])
+        routing = pywrapcp.RoutingModel(manager)
+        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+        # Solve the problem.
+        solution = routing.SolveWithParameters(search_parameters)
+        
+        # Print solution on console.
+        if solution:
+            print_solution(manager, routing, solution)
+
+        routes = get_routes(solution, routing, manager)[-1][:-1]
+        
+        for i in routes:
+            destinations.loc[group_dest.iloc[i]['id'],'stop'] = int(routes[i])
+            
+    return destinations
 
 if __name__ == '__main__':
     from address_to_wgs84 import destinations
