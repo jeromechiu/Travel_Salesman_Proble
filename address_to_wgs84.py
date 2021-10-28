@@ -1,7 +1,8 @@
 import googlemaps
 import pandas as pd
+from key import gmap_key
 
-gmaps = googlemaps.Client(key='AIzaSyChK3j3VtgLFgFDuep6dNU_NzXqztGpqxk')
+gmaps = googlemaps.Client(key=gmap_key)
 
 """
 Sample of address

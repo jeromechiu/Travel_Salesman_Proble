@@ -5,9 +5,10 @@ import pandas as pd
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 from address_to_wgs84 import transfer_address_geocord
+from key import gmap_key
 
 
-gmaps = googlemaps.Client(key='AIzaSyChK3j3VtgLFgFDuep6dNU_NzXqztGpqxk')
+gmaps = googlemaps.Client(key=gmap_key)
 
 
 def gen_square_form(locations):
