@@ -4,38 +4,19 @@ from itertools import tee
 import pandas as pd
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
+from address_to_wgs84 import transfer_address_geocord
 
 
-gmaps = googlemaps.Client(key='google_map_key')
+gmaps = googlemaps.Client(key='AIzaSyChK3j3VtgLFgFDuep6dNU_NzXqztGpqxk')
 
 
-destinations = [[0, '新北市中和區中正路209號'],
-                [1, '新北市中和區建一路92號'],
-                [3, '新北市中和區景平路634-2號B1'],
-                [2, '新北市中和區連城路258號18樓']
-                ]
+# destinations = [[0, '新北市中和區中正路209號'],
+#                 [1, '新北市中和區建一路92號'],
+#                 [3, '新北市中和區景平路634-2號B1'],
+#                 [2, '新北市中和區連城路258號18樓']
+#                 ]
 
 
-
-def to_coord(address):
-    return gmaps.geocode(address)
-
-def transfer_address_geocord(destinations):
-    dest_coord = list()
-    for i, addr in destinations:
-        data = to_coord(addr)
-        lat, long = data[0]['geometry']['location']['lat'], data[0]['geometry']['location']['lng']
-        dest_coord.append([i, (lat, long)])
-
-
-    # dest_coord = [[0, (24.993484, 121.497134)], 
-    #               [1, (25.0007671, 121.4879088)], 
-    #               [3, (24.9986295, 121.5007544)], 
-    #               [2, (24.99663, 121.4869139)]]
-    dest_coord = pd.DataFrame(dest_coord, columns=['id', 'coord'])
-    dest_coord.set_index('id', inplace=True)
-    dest_coord.sort_index(inplace=True)
-    return dest_coord
 
 
 
@@ -61,10 +42,10 @@ def gen_square_form(locations):
     print(square_matrix)
     return square_matrix
 
-def create_data_model():
+def create_data_model(destinations):
     """Stores the data for the problem."""
     data = {}
-    data['distance_matrix'] =   gen_square_form(transfer_address_geocord(destinations)) # yapf: disable
+    data['distance_matrix'] =   gen_square_form(destinations) # yapf: disable
     data['num_vehicles'] = 1
     data['depot'] = 0
     return data
@@ -85,8 +66,8 @@ def print_solution(manager, routing, solution):
     plan_output += 'Objective: {}m\n'.format(route_distance)
 
 
-def main():
-    data = create_data_model()
+def calculate_tsp(destinations):
+    data = create_data_model(destinations)
     manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
                                        data['num_vehicles'], data['depot'])
     routing = pywrapcp.RoutingModel(manager)
@@ -102,5 +83,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()  
+    from address_to_wgs84 import destinations
+    calculate_tsp(destinations)  
  
