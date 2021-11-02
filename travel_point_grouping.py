@@ -71,12 +71,3 @@ def grouping(cart_coord, wgs84_points=None):
         
     
     
-
-def main():
-    cart_coord = wgs84_to_cartesian(dest_coord)
-    grouping(cart_coord, dest_coord)
-    print(cart_coord)
-    
-if __name__ == '__main__':
-    main()  
-    

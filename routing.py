@@ -103,8 +103,3 @@ def calculate_tsp(destinations):
             destinations.loc[group_dest.iloc[i]['id'],'stop'] = int(routes[i])
             
     return destinations
-
-if __name__ == '__main__':
-    from address_to_wgs84 import destinations
-    calculate_tsp(destinations)  
- 
